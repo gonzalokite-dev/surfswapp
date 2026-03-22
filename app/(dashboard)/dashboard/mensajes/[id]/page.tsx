@@ -30,14 +30,15 @@ export default async function ConversacionPage({ params }: ChatPageProps) {
     .single()
 
   if (!conv) notFound()
-  if (conv.buyer_id !== user!.id && conv.seller_id !== user!.id) redirect('/dashboard/mensajes')
+  const c = conv as any
+  if (c.buyer_id !== user!.id && c.seller_id !== user!.id) redirect('/dashboard/mensajes')
 
-  const isbuyer = conv.buyer_id === user!.id
-  const otherUser: any = isbuyer ? conv.seller : conv.buyer
+  const isbuyer = c.buyer_id === user!.id
+  const otherUser: any = isbuyer ? c.seller : c.buyer
   const initials = (otherUser?.full_name ?? otherUser?.username ?? 'R')
     .split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 
-  const product: any = conv.products
+  const product: any = c.products
   const productImg = product?.product_images
     ?.sort((a: any, b: any) => a.order_index - b.order_index)?.[0]?.url
 
