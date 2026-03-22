@@ -24,7 +24,7 @@ export default function LoginPage() {
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') ?? '/dashboard'
   const { toast } = useToast()
@@ -39,19 +39,20 @@ function LoginForm() {
   })
 
   const onSubmit = async (values: LoginFormValues) => {
+    setErrorMsg(null)
     const { error } = await supabase.auth.signInWithPassword({
       email: values.email,
       password: values.password,
     })
 
     if (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error al iniciar sesión',
-        description: error.message === 'Invalid login credentials'
-          ? 'Email o contraseña incorrectos'
-          : error.message,
-      })
+      const msg =
+        error.message === 'Invalid login credentials'
+          ? 'Email o contraseña incorrectos.'
+          : error.message === 'Email not confirmed'
+          ? 'Debes confirmar tu email antes de entrar. Revisa tu bandeja de entrada.'
+          : error.message
+      setErrorMsg(msg)
       return
     }
 
@@ -115,6 +116,12 @@ function LoginForm() {
                   <p className="text-xs text-destructive">{errors.password.message}</p>
                 )}
               </div>
+
+              {errorMsg && (
+                <div className="bg-destructive/10 text-destructive text-sm rounded-lg px-4 py-3">
+                  {errorMsg}
+                </div>
+              )}
 
               <Button
                 type="submit"
