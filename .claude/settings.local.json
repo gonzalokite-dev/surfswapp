@@ -4,7 +4,9 @@
       "Bash(npm install:*)",
       "Bash(npm run:*)",
       "Bash(curl:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(\"C:/Users/GonzaloBenavidesLópe/OneDrive -:*)",
+      "Bash(grep -E \"\\(^[^/.next]*$|app/|components/|lib/|hooks/|supabase/|package\\\\.json|middleware\\\\.ts\\)\")"
     ]
   }
 }
