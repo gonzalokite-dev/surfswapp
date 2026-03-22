@@ -8,6 +8,7 @@ export type Json =
 
 export type Database = {
   public: {
+    PostgrestVersion: "12"
     Tables: {
       profiles: {
         Row: {

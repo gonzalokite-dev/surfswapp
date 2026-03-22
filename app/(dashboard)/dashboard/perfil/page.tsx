@@ -43,12 +43,13 @@ export default function PerfilPage() {
       setUser(user)
       if (user) {
         const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
-        setProfile(data)
+        const profileData = data as any
+        setProfile(profileData)
         reset({
-          full_name: data?.full_name ?? user.user_metadata?.full_name ?? '',
-          username: data?.username ?? '',
-          location: data?.location ?? '',
-          bio: data?.bio ?? '',
+          full_name: profileData?.full_name ?? user.user_metadata?.full_name ?? '',
+          username: profileData?.username ?? '',
+          location: profileData?.location ?? '',
+          bio: profileData?.bio ?? '',
         })
       }
       setLoading(false)
