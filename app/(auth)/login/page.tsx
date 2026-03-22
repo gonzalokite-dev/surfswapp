@@ -9,8 +9,8 @@ import { Waves, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { createClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginFormValues } from '@/lib/validations/auth'
-import { loginAction } from './actions'
 
 export default function LoginPage() {
   return (
@@ -36,18 +36,29 @@ function LoginForm() {
 
   const onSubmit = async (values: LoginFormValues) => {
     setErrorMsg(null)
-    const result = await loginAction(values.email, values.password)
-    if ('error' in result) {
-      setErrorMsg(result.error)
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithPassword({
+      email: values.email,
+      password: values.password,
+    })
+
+    if (error) {
+      const msg =
+        error.message === 'Invalid login credentials'
+          ? 'Email o contraseña incorrectos.'
+          : error.message === 'Email not confirmed'
+          ? 'Debes confirmar tu email antes de entrar. Revisa tu bandeja de entrada.'
+          : error.message
+      setErrorMsg(msg)
       return
     }
+
     window.location.href = redirectTo
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-2">
             <div className="w-12 h-12 rounded-2xl gradient-ocean flex items-center justify-center">

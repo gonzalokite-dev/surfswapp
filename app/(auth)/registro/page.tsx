@@ -8,8 +8,8 @@ import { Waves, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { createClient } from '@/lib/supabase/client'
 import { registerSchema, type RegisterFormValues } from '@/lib/validations/auth'
-import { registerAction } from './actions'
 
 export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -25,18 +25,28 @@ export default function RegisterPage() {
 
   const onSubmit = async (values: RegisterFormValues) => {
     setErrorMsg(null)
-    const result = await registerAction(values.email, values.password, values.full_name)
-    if ('error' in result) {
-      setErrorMsg(result.error)
+    const supabase = createClient()
+    const { error } = await supabase.auth.signUp({
+      email: values.email,
+      password: values.password,
+      options: { data: { full_name: values.full_name } },
+    })
+
+    if (error) {
+      const msg =
+        error.message === 'User already registered'
+          ? 'Ya existe una cuenta con este email.'
+          : error.message
+      setErrorMsg(msg)
       return
     }
+
     window.location.href = '/dashboard'
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 px-4 py-12">
       <div className="w-full max-w-md">
-        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center gap-2">
             <div className="w-12 h-12 rounded-2xl gradient-ocean flex items-center justify-center">

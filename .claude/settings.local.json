@@ -6,7 +6,8 @@
       "Bash(curl:*)",
       "Bash(npx tsc:*)",
       "Bash(\"C:/Users/GonzaloBenavidesLópe/OneDrive -:*)",
-      "Bash(grep -E \"\\(^[^/.next]*$|app/|components/|lib/|hooks/|supabase/|package\\\\.json|middleware\\\\.ts\\)\")"
+      "Bash(grep -E \"\\(^[^/.next]*$|app/|components/|lib/|hooks/|supabase/|package\\\\.json|middleware\\\\.ts\\)\")",
+      "Bash(npm show:*)"
     ]
   }
 }
