@@ -97,6 +97,7 @@ export default async function ConversacionPage({ params }: ChatPageProps) {
         conversationId={params.id}
         currentUserId={user!.id}
         initialMessages={messages ?? []}
+        otherUserName={otherUser?.full_name ?? otherUser?.username ?? 'Rider'}
       />
     </div>
   )

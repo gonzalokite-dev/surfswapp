@@ -143,3 +143,21 @@ CREATE OR REPLACE TRIGGER set_products_updated_at
 CREATE OR REPLACE TRIGGER set_conversations_updated_at
   BEFORE UPDATE ON public.conversations
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
+
+-- ============================================================
+-- AUTO-UPDATE conversations.updated_at WHEN A MESSAGE IS INSERTED
+-- ============================================================
+CREATE OR REPLACE FUNCTION public.update_conversation_on_message()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE public.conversations
+  SET updated_at = NOW()
+  WHERE id = NEW.conversation_id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP TRIGGER IF EXISTS on_message_inserted ON public.messages;
+CREATE TRIGGER on_message_inserted
+  AFTER INSERT ON public.messages
+  FOR EACH ROW EXECUTE FUNCTION public.update_conversation_on_message();

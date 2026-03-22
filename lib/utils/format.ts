@@ -59,3 +59,23 @@ export function getStatusColor(status: string): string {
   }
   return map[status] ?? 'bg-slate-100 text-slate-500'
 }
+
+export function getCategoryLabel(category: string): string {
+  const map: Record<string, string> = {
+    surf: 'Surf',
+    kitesurf: 'Kitesurf',
+    windsurf: 'Windsurf',
+    wing: 'Wing',
+    foil: 'Foil',
+    accesorios: 'Accesorios',
+  }
+  return map[category] ?? category
+}
+
+export function formatTime(dateString: string): string {
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
+}
