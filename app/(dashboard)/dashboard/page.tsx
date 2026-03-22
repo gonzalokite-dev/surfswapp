@@ -16,7 +16,7 @@ export default async function DashboardPage() {
       .or(`buyer_id.eq.${user!.id},seller_id.eq.${user!.id}`),
   ])
 
-  const products = productsRes.data ?? []
+  const products = (productsRes.data ?? []) as any[]
   const conversations = conversationsRes.data ?? []
   const activeCount = products.filter((p) => p.status === 'active').length
   const soldCount = products.filter((p) => p.status === 'sold').length
