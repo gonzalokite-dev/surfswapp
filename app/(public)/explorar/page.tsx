@@ -7,6 +7,8 @@ import { PageLoader } from '@/components/common/loading-spinner'
 import { ProductFilters } from '@/components/products/product-filters'
 import type { ProductWithImages } from '@/lib/types/database'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'Explorar material de surf de segunda mano',
   description:

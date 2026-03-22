@@ -7,6 +7,8 @@ import { TrustSection } from '@/components/landing/trust-section'
 import { CtaFinal } from '@/components/landing/cta-final'
 import { FeaturedProducts } from '@/components/landing/featured-products'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'SURFSWAPP — Compra y vende material de surf de segunda mano',
   description:
