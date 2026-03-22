@@ -26,9 +26,11 @@ export default function RegisterPage() {
   const onSubmit = async (values: RegisterFormValues) => {
     setErrorMsg(null)
     const result = await registerAction(values.email, values.password, values.full_name)
-    if (result?.error) {
+    if ('error' in result) {
       setErrorMsg(result.error)
+      return
     }
+    window.location.href = '/dashboard'
   }
 
   return (

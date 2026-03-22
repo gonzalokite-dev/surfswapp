@@ -36,10 +36,12 @@ function LoginForm() {
 
   const onSubmit = async (values: LoginFormValues) => {
     setErrorMsg(null)
-    const result = await loginAction(values.email, values.password, redirectTo)
-    if (result?.error) {
+    const result = await loginAction(values.email, values.password)
+    if ('error' in result) {
       setErrorMsg(result.error)
+      return
     }
+    window.location.href = redirectTo
   }
 
   return (

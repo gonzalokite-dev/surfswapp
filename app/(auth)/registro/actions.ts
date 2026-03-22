@@ -1,13 +1,12 @@
 'use server'
 
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
 export async function registerAction(
   email: string,
   password: string,
   fullName: string
-): Promise<{ error: string } | never> {
+): Promise<{ error: string } | { success: true }> {
   const supabase = await createClient()
 
   const { error } = await supabase.auth.signUp({
@@ -26,5 +25,5 @@ export async function registerAction(
     return { error: msg }
   }
 
-  redirect('/dashboard')
+  return { success: true }
 }
