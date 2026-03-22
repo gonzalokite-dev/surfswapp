@@ -27,18 +27,21 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  let session = null
-  try {
-    const { data } = await supabase.auth.getSession()
-    session = data.session
-  } catch {
-    // Supabase not configured yet — allow all traffic
-  }
-
   const pathname = request.nextUrl.pathname
   const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p))
 
-  if (isProtected && !session) {
+  if (!isProtected) return supabaseResponse
+
+  // Only validate auth on protected routes
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+  } catch {
+    // Supabase not configured — allow through
+  }
+
+  if (!user) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirectTo', pathname)
     return NextResponse.redirect(loginUrl)
