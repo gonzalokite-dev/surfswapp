@@ -27,12 +27,14 @@ export function ContactSellerButton({
   const supabase = createClient()
 
   const handleContact = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
 
-    if (!user) {
-      router.push(`/login?redirectTo=/producto/${productId}`)
+    if (!session) {
+      window.location.href = `/login?redirectTo=/producto/${productId}`
       return
     }
+
+    const user = session.user
 
     if (user.id === sellerId) {
       window.location.href = `/dashboard/productos/${productId}/editar`
@@ -51,7 +53,7 @@ export function ContactSellerButton({
       .maybeSingle()
 
     if (existing) {
-      router.push(`/dashboard/mensajes/${existing.id}`)
+      window.location.href = `/dashboard/mensajes/${existing.id}`
       return
     }
 
@@ -67,13 +69,12 @@ export function ContactSellerButton({
     if (error) {
       toast({
         variant: 'destructive',
-        title: 'Error',
-        description: 'No se pudo iniciar la conversación.',
+        description: `Error: ${error.message}`,
       })
       return
     }
 
-    router.push(`/dashboard/mensajes/${conversation.id}`)
+    window.location.href = `/dashboard/mensajes/${conversation.id}`
   }
 
   return (
