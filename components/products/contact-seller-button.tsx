@@ -23,24 +23,25 @@ export function ContactSellerButton({
   const supabase = createClient()
 
   const handleContact = async () => {
-    setErrorMsg(null)
+    setErrorMsg('Iniciando...')
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-      if (!user) {
-        window.location.href = `/login?redirectTo=/producto/${productId}`
-        return
-      }
+      if (authError) { setErrorMsg(`Auth error: ${authError.message}`); return }
+      if (!user) { setErrorMsg('Sin sesión — redirigiendo a login'); window.location.href = `/login?redirectTo=/producto/${productId}`; return }
+
+      setErrorMsg(`Usuario: ${user.email} | Seller: ${sellerId.slice(0, 8)}`)
 
       if (user.id === sellerId) {
+        setErrorMsg('Eres el vendedor — abriendo edición')
         window.location.href = `/dashboard/productos/${productId}/editar`
         return
       }
 
       setLoading(true)
+      setErrorMsg('Buscando conversación existente...')
 
-      // Check if conversation already exists
       const { data: existing, error: existingError } = await supabase
         .from('conversations')
         .select('id')
@@ -49,18 +50,16 @@ export function ContactSellerButton({
         .eq('seller_id', sellerId)
         .maybeSingle()
 
-      if (existingError) {
-        setLoading(false)
-        setErrorMsg(`Error: ${existingError.message}`)
-        return
-      }
+      if (existingError) { setLoading(false); setErrorMsg(`Error búsqueda: ${existingError.message}`); return }
 
       if (existing) {
+        setErrorMsg(`Conversación existente: ${existing.id} — navegando`)
         window.location.href = `/dashboard/mensajes/${existing.id}`
         return
       }
 
-      // Create new conversation
+      setErrorMsg('Creando conversación nueva...')
+
       const { data: conversation, error: insertError } = await supabase
         .from('conversations')
         .insert({ product_id: productId, buyer_id: user.id, seller_id: sellerId })
@@ -69,15 +68,13 @@ export function ContactSellerButton({
 
       setLoading(false)
 
-      if (insertError) {
-        setErrorMsg(`Error: ${insertError.message}`)
-        return
-      }
+      if (insertError) { setErrorMsg(`Error insert: ${insertError.message}`); return }
 
+      setErrorMsg(`Conversación creada: ${conversation.id} — navegando`)
       window.location.href = `/dashboard/mensajes/${conversation.id}`
     } catch (err: any) {
       setLoading(false)
-      setErrorMsg(err?.message ?? 'Error inesperado al contactar')
+      setErrorMsg(`Excepción: ${err?.message ?? 'desconocida'}`)
     }
   }
 
