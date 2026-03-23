@@ -75,7 +75,7 @@ export function ProductForm({ defaultValues, defaultImages = [], mode }: Product
         .single()
 
       if (error || !product) {
-        toast({ variant: 'destructive', title: 'Error', description: 'No se pudo publicar el anuncio.' })
+        toast({ variant: 'destructive', title: 'Error', description: error?.message ?? 'No se pudo publicar el anuncio.' })
         return
       }
 
