@@ -1,12 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { MessageCircle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
-import { useToast } from '@/hooks/use-toast'
-import { Toaster } from '@/components/ui/toaster'
 
 interface ContactSellerButtonProps {
   productId: string
@@ -22,63 +19,72 @@ export function ContactSellerButton({
   isSold,
 }: ContactSellerButtonProps) {
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const { toast } = useToast()
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const supabase = createClient()
 
   const handleContact = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
+    setErrorMsg(null)
 
-    if (!session) {
-      window.location.href = `/login?redirectTo=/producto/${productId}`
-      return
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      if (!session) {
+        window.location.href = `/login?redirectTo=/producto/${productId}`
+        return
+      }
+
+      const user = session.user
+
+      if (user.id === sellerId) {
+        window.location.href = `/dashboard/productos/${productId}/editar`
+        return
+      }
+
+      setLoading(true)
+
+      // Check if conversation already exists
+      const { data: existing, error: existingError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('product_id', productId)
+        .eq('buyer_id', user.id)
+        .eq('seller_id', sellerId)
+        .maybeSingle()
+
+      if (existingError) {
+        setLoading(false)
+        setErrorMsg(`Error: ${existingError.message}`)
+        return
+      }
+
+      if (existing) {
+        window.location.href = `/dashboard/mensajes/${existing.id}`
+        return
+      }
+
+      // Create new conversation
+      const { data: conversation, error: insertError } = await supabase
+        .from('conversations')
+        .insert({ product_id: productId, buyer_id: user.id, seller_id: sellerId })
+        .select('id')
+        .single()
+
+      setLoading(false)
+
+      if (insertError) {
+        setErrorMsg(`Error: ${insertError.message}`)
+        return
+      }
+
+      window.location.href = `/dashboard/mensajes/${conversation.id}`
+    } catch (err: any) {
+      setLoading(false)
+      setErrorMsg(err?.message ?? 'Error inesperado al contactar')
     }
-
-    const user = session.user
-
-    if (user.id === sellerId) {
-      window.location.href = `/dashboard/productos/${productId}/editar`
-      return
-    }
-
-    setLoading(true)
-
-    // Check if conversation already exists
-    const { data: existing } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('product_id', productId)
-      .eq('buyer_id', user.id)
-      .eq('seller_id', sellerId)
-      .maybeSingle()
-
-    if (existing) {
-      window.location.href = `/dashboard/mensajes/${existing.id}`
-      return
-    }
-
-    // Create new conversation
-    const { data: conversation, error } = await supabase
-      .from('conversations')
-      .insert({ product_id: productId, buyer_id: user.id, seller_id: sellerId })
-      .select('id')
-      .single()
-
-    setLoading(false)
-
-    if (error) {
-      toast({
-        variant: 'destructive',
-        description: `Error: ${error.message}`,
-      })
-      return
-    }
-
-    window.location.href = `/dashboard/mensajes/${conversation.id}`
   }
 
   return (
-    <>
+    <div className="space-y-2">
       <Button
         onClick={handleContact}
         variant="ocean"
@@ -93,7 +99,9 @@ export function ContactSellerButton({
         )}
         {isSold ? 'Este artículo ya está vendido' : `Contactar con ${sellerName}`}
       </Button>
-      <Toaster />
-    </>
+      {errorMsg && (
+        <p className="text-sm text-destructive text-center">{errorMsg}</p>
+      )}
+    </div>
   )
 }
