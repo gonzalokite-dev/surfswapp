@@ -30,34 +30,44 @@ export function ImageUpload({ value, onChange, maxImages = 5, disabled }: ImageU
     setError(null)
     const newUrls: string[] = []
 
-    for (const file of Array.from(files)) {
-      if (!file.type.startsWith('image/')) {
-        setError('Solo se permiten imágenes')
-        continue
+    try {
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith('image/')) {
+          setError('Solo se permiten imágenes')
+          continue
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          setError('Cada imagen debe pesar menos de 5MB')
+          continue
+        }
+
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          setError('Debes iniciar sesión para subir imágenes.')
+          break
+        }
+
+        const ext = file.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const path = `${user.id}/${fileName}`
+
+        const { data, error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(path, file, { cacheControl: '3600', upsert: false })
+
+        if (uploadError) {
+          setError(`Error: ${uploadError.message}`)
+          continue
+        }
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('product-images')
+          .getPublicUrl(data.path)
+
+        newUrls.push(publicUrl)
       }
-      if (file.size > 5 * 1024 * 1024) {
-        setError('Cada imagen debe pesar menos de 5MB')
-        continue
-      }
-
-      const ext = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-      const path = `products/${fileName}`
-
-      const { data, error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(path, file, { cacheControl: '3600', upsert: false })
-
-      if (uploadError) {
-        setError('Error al subir imagen. Inténtalo de nuevo.')
-        continue
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(data.path)
-
-      newUrls.push(publicUrl)
+    } catch (err: any) {
+      setError(err?.message ?? 'Error inesperado al subir la imagen.')
     }
 
     onChange([...value, ...newUrls])
