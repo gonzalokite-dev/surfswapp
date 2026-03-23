@@ -56,11 +56,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   if (!product) notFound()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  const isOwner = user?.id === product.user_id
+  const { data: { session } } = await supabase.auth.getSession()
+  const isOwner = session?.user?.id === product.user_id
   const images = [...(product.product_images ?? [])].sort((a, b) => a.order_index - b.order_index)
   const sellerInitials = (product.profiles?.full_name ?? product.profiles?.username ?? 'R')
     .split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)

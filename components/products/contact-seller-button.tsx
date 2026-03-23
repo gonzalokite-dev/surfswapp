@@ -35,7 +35,7 @@ export function ContactSellerButton({
     }
 
     if (user.id === sellerId) {
-      toast({ description: 'Este anuncio es tuyo.' })
+      window.location.href = `/dashboard/productos/${productId}/editar`
       return
     }
 
