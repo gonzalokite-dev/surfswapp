@@ -26,14 +26,12 @@ export function ContactSellerButton({
     setErrorMsg(null)
 
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { user } } = await supabase.auth.getUser()
 
-      if (!session) {
+      if (!user) {
         window.location.href = `/login?redirectTo=/producto/${productId}`
         return
       }
-
-      const user = session.user
 
       if (user.id === sellerId) {
         window.location.href = `/dashboard/productos/${productId}/editar`
