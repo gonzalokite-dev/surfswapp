@@ -52,8 +52,9 @@ export function ProductForm({ defaultValues, defaultImages = [], mode }: Product
       return
     }
 
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { router.push('/login'); return }
+    const user = session.user
 
     if (mode === 'create') {
       const { data: product, error } = await supabase
@@ -88,8 +89,7 @@ export function ProductForm({ defaultValues, defaultImages = [], mode }: Product
       await supabase.from('product_images').insert(imageInserts)
 
       toast({ variant: 'success', title: '¡Anuncio publicado!', description: 'Tu material ya está visible.' })
-      router.push(`/producto/${product.id}`)
-      router.refresh()
+      window.location.href = `/producto/${product.id}`
     } else {
       // Edit mode
       const { error } = await supabase
@@ -123,8 +123,7 @@ export function ProductForm({ defaultValues, defaultImages = [], mode }: Product
       if (imageInserts.length > 0) await supabase.from('product_images').insert(imageInserts)
 
       toast({ variant: 'success', description: 'Anuncio actualizado correctamente.' })
-      router.push(`/producto/${defaultValues!.id}`)
-      router.refresh()
+      window.location.href = `/producto/${defaultValues!.id}`
     }
   }
 
