@@ -31,41 +31,43 @@ export function ImageUpload({ value, onChange, maxImages = 5, disabled }: ImageU
     const newUrls: string[] = []
 
     try {
-      for (const file of Array.from(files)) {
-        if (!file.type.startsWith('image/')) {
-          setError('Solo se permiten imágenes')
-          continue
-        }
-        if (file.size > 5 * 1024 * 1024) {
-          setError('Cada imagen debe pesar menos de 5MB')
-          continue
-        }
-
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) {
-          setError('Debes iniciar sesión para subir imágenes.')
-          break
-        }
-
-        const ext = file.name.split('.').pop()
-        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-        const path = `${user.id}/${fileName}`
-
-        const { data, error: uploadError } = await supabase.storage
-          .from('product-images')
-          .upload(path, file, { cacheControl: '3600', upsert: false })
-
-        if (uploadError) {
-          setError(`Error: ${uploadError.message}`)
-          continue
-        }
-
-        const { data: { publicUrl } } = supabase.storage
-          .from('product-images')
-          .getPublicUrl(data.path)
-
-        newUrls.push(publicUrl)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        setError('Debes iniciar sesión para subir imágenes.')
+        setUploading(false)
+        return
       }
+
+      const validFiles = Array.from(files).filter(file => {
+        if (!file.type.startsWith('image/')) { setError('Solo se permiten imágenes'); return false }
+        if (file.size > 5 * 1024 * 1024) { setError('Cada imagen debe pesar menos de 5MB'); return false }
+        return true
+      })
+
+      const uploads = await Promise.all(
+        validFiles.map(async (file) => {
+          const ext = file.name.split('.').pop()
+          const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+          const path = `${user.id}/${fileName}`
+
+          const { data, error: uploadError } = await supabase.storage
+            .from('product-images')
+            .upload(path, file, { cacheControl: '3600', upsert: false })
+
+          if (uploadError) {
+            setError(`Error: ${uploadError.message}`)
+            return null
+          }
+
+          const { data: { publicUrl } } = supabase.storage
+            .from('product-images')
+            .getPublicUrl(data.path)
+
+          return publicUrl
+        })
+      )
+
+      newUrls.push(...uploads.filter((u): u is string => u !== null))
     } catch (err: any) {
       setError(err?.message ?? 'Error inesperado al subir la imagen.')
     }
