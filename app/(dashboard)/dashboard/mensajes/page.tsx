@@ -8,8 +8,8 @@ import { MessageCircle } from 'lucide-react'
 
 export default async function MensajesPage() {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  const userId = session!.user.id
+  const { data: { user } } = await supabase.auth.getUser()
+  const userId = user!.id
 
   const { data: conversations } = await supabase
     .from('conversations')

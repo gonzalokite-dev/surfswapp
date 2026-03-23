@@ -7,8 +7,8 @@ import { Package, MessageCircle, Plus, TrendingUp, Edit, ArrowRight } from 'luci
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  const userId = session!.user.id
+  const { data: { user } } = await supabase.auth.getUser()
+  const userId = user!.id
 
   const [productsRes, conversationsRes] = await Promise.all([
     supabase
@@ -40,7 +40,7 @@ export default async function DashboardPage() {
   const recentProducts = products.slice(0, 4)
   const recentConversations = conversations.slice(0, 3)
 
-  const name = session?.user?.user_metadata?.full_name?.split(' ')[0] ?? 'rider'
+  const name = user?.user_metadata?.full_name?.split(' ')[0] ?? 'rider'
 
   return (
     <div className="space-y-6">

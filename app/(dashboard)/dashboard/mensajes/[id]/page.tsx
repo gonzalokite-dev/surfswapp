@@ -13,8 +13,8 @@ interface ChatPageProps {
 
 export default async function ConversacionPage({ params }: ChatPageProps) {
   const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  const userId = session!.user.id
+  const { data: { user } } = await supabase.auth.getUser()
+  const userId = user!.id
 
   const { data: conv } = await supabase
     .from('conversations')
