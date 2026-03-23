@@ -21,14 +21,14 @@ interface PageProps {
 
 export default async function MisProductosPage({ searchParams }: PageProps) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
 
   const estado = searchParams.estado ?? ''
 
   let query = supabase
     .from('products')
     .select('*, product_images (url, order_index)')
-    .eq('user_id', user!.id)
+    .eq('user_id', session!.user.id)
     .order('created_at', { ascending: false })
 
   if (estado && ['active', 'reserved', 'sold'].includes(estado)) {

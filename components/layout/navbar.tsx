@@ -35,13 +35,13 @@ export function Navbar() {
 
   useEffect(() => {
     const loadUser = async () => {
-      const { data } = await supabase.auth.getUser()
-      setUser(data.user)
-      if (data.user) {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+      if (session?.user) {
         const { data: profileData } = await supabase
           .from('profiles')
           .select('full_name, avatar_url')
-          .eq('id', data.user.id)
+          .eq('id', session.user.id)
           .single()
         setProfile(profileData)
       }
@@ -93,10 +93,7 @@ export function Navbar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    setMenuOpen(false)
-    setDropdownOpen(false)
-    router.push('/')
-    router.refresh()
+    window.location.href = '/'
   }
 
   const displayName =

@@ -12,7 +12,6 @@ import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { createClient } from '@/lib/supabase/client'
 import { useToast } from '@/hooks/use-toast'
-import { Toaster } from '@/components/ui/toaster'
 import { cn } from '@/lib/utils/cn'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -223,8 +222,7 @@ export default function PerfilPage() {
   }
 
   return (
-    <>
-      <div className="space-y-6 max-w-lg">
+    <div className="space-y-6 max-w-lg">
         <div>
           <h1 className="font-display text-2xl font-bold">Mi perfil</h1>
           <p className="text-muted-foreground text-sm mt-1">
@@ -416,8 +414,6 @@ export default function PerfilPage() {
             Para cambiar tu email o contraseña, contacta con soporte.
           </p>
         </div>
-      </div>
-      <Toaster />
-    </>
+    </div>
   )
 }

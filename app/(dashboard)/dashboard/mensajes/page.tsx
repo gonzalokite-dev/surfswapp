@@ -8,7 +8,8 @@ import { MessageCircle } from 'lucide-react'
 
 export default async function MensajesPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const userId = session!.user.id
 
   const { data: conversations } = await supabase
     .from('conversations')
@@ -23,7 +24,7 @@ export default async function MensajesPage() {
       seller:profiles!conversations_seller_id_fkey (id, username, full_name, avatar_url),
       messages (content, created_at, sender_id)
     `)
-    .or(`buyer_id.eq.${user!.id},seller_id.eq.${user!.id}`)
+    .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
     .order('updated_at', { ascending: false })
 
   return (
@@ -45,7 +46,7 @@ export default async function MensajesPage() {
       ) : (
         <div className="space-y-2">
           {conversations.map((conv: any) => {
-            const isbuyer = conv.buyer_id === user!.id
+            const isbuyer = conv.buyer_id === userId
             const otherUser = isbuyer ? conv.seller : conv.buyer
             const lastMsg = [...(conv.messages ?? [])].sort(
               (a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -84,7 +85,7 @@ export default async function MensajesPage() {
                   )}
                   {lastMsg && (
                     <p className="text-sm text-muted-foreground truncate">
-                      {lastMsg.sender_id === user!.id ? 'Tú: ' : ''}
+                      {lastMsg.sender_id === userId ? 'Tú: ' : ''}
                       {lastMsg.content}
                     </p>
                   )}

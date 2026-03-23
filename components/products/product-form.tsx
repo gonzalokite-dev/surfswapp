@@ -53,7 +53,7 @@ export function ProductForm({ defaultValues, defaultImages = [], mode }: Product
     }
 
     const { data: { session } } = await supabase.auth.getSession()
-    if (!session) { router.push('/login'); return }
+    if (!session) { window.location.href = '/login'; return }
     const user = session.user
 
     if (mode === 'create') {

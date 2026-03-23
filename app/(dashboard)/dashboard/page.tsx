@@ -7,13 +7,14 @@ import { Package, MessageCircle, Plus, TrendingUp, Edit, ArrowRight } from 'luci
 
 export default async function DashboardPage() {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const userId = session!.user.id
 
   const [productsRes, conversationsRes] = await Promise.all([
     supabase
       .from('products')
       .select('id, title, price, status, category, created_at, product_images (url, order_index)')
-      .eq('user_id', user!.id)
+      .eq('user_id', userId)
       .order('created_at', { ascending: false }),
     supabase
       .from('conversations')
@@ -27,7 +28,7 @@ export default async function DashboardPage() {
         seller:profiles!conversations_seller_id_fkey (id, full_name, username, avatar_url),
         messages (content, created_at, sender_id)
       `)
-      .or(`buyer_id.eq.${user!.id},seller_id.eq.${user!.id}`)
+      .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
       .order('updated_at', { ascending: false }),
   ])
 
@@ -39,7 +40,7 @@ export default async function DashboardPage() {
   const recentProducts = products.slice(0, 4)
   const recentConversations = conversations.slice(0, 3)
 
-  const name = user?.user_metadata?.full_name?.split(' ')[0] ?? 'rider'
+  const name = session?.user?.user_metadata?.full_name?.split(' ')[0] ?? 'rider'
 
   return (
     <div className="space-y-6">
@@ -192,7 +193,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="divide-y">
               {recentConversations.map((conv: any) => {
-                const isBuyer = conv.buyer_id === user!.id
+                const isBuyer = conv.buyer_id === userId
                 const otherUser: any = isBuyer ? conv.seller : conv.buyer
                 const lastMsg = [...(conv.messages ?? [])].sort(
                   (a: any, b: any) =>
@@ -233,7 +234,7 @@ export default async function DashboardPage() {
                       )}
                       {lastMsg ? (
                         <p className="text-xs text-muted-foreground truncate">
-                          {lastMsg.sender_id === user!.id ? 'Tú: ' : ''}
+                          {lastMsg.sender_id === userId ? 'Tú: ' : ''}
                           {lastMsg.content}
                         </p>
                       ) : (

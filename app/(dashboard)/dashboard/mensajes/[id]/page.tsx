@@ -13,7 +13,8 @@ interface ChatPageProps {
 
 export default async function ConversacionPage({ params }: ChatPageProps) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const userId = session!.user.id
 
   const { data: conv } = await supabase
     .from('conversations')
@@ -31,9 +32,9 @@ export default async function ConversacionPage({ params }: ChatPageProps) {
 
   if (!conv) notFound()
   const c = conv as any
-  if (c.buyer_id !== user!.id && c.seller_id !== user!.id) redirect('/dashboard/mensajes')
+  if (c.buyer_id !== userId && c.seller_id !== userId) redirect('/dashboard/mensajes')
 
-  const isbuyer = c.buyer_id === user!.id
+  const isbuyer = c.buyer_id === userId
   const otherUser: any = isbuyer ? c.seller : c.buyer
   const initials = (otherUser?.full_name ?? otherUser?.username ?? 'R')
     .split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
@@ -95,7 +96,7 @@ export default async function ConversacionPage({ params }: ChatPageProps) {
       {/* Chat */}
       <ChatView
         conversationId={params.id}
-        currentUserId={user!.id}
+        currentUserId={userId}
         initialMessages={messages ?? []}
         otherUserName={otherUser?.full_name ?? otherUser?.username ?? 'Rider'}
       />

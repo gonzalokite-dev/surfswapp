@@ -8,7 +8,7 @@ interface EditProductPageProps {
 
 export default async function EditarProductoPage({ params }: EditProductPageProps) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
 
   const { data: product } = await supabase
     .from('products')
@@ -17,7 +17,7 @@ export default async function EditarProductoPage({ params }: EditProductPageProp
     .single()
 
   if (!product) notFound()
-  if (product.user_id !== user?.id) redirect('/dashboard/productos')
+  if (product.user_id !== session?.user?.id) redirect('/dashboard/productos')
 
   const images = [...(product.product_images ?? [])]
     .sort((a, b) => a.order_index - b.order_index)
